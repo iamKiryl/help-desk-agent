@@ -19,12 +19,12 @@ class BookingTests(unittest.TestCase):
 class RefundTests(unittest.TestCase):
     def test_refund_amounts(self):
         cases = [
-            # ID, процент возврата аренды, общий возврат
+            # Booking ID, rental refund percentage, total refund
             ("CW-1001", 100, "90.00"),
             ("CW-1002", 50, "340.00"),
             ("CW-1003", 0, "50.00"),
-            ("CW-1007", 100, "186.00"),  # ровно 48 часов
-            ("CW-1010", 50, "170.00"),   # ровно 24 часа
+            ("CW-1007", 100, "186.00"),  # Exactly 48 hours
+            ("CW-1010", 50, "170.00"),   # Exactly 24 hours
         ]
 
         for booking_id, percent, total in cases:

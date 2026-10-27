@@ -131,7 +131,7 @@ def main():
 
             report["results"].append(result)
 
-            # Сохраняем после каждого вопроса, чтобы не потерять прогресс.
+            # Save after each question to preserve partial results.
             RESULTS_PATH.write_text(
                 json.dumps(report, ensure_ascii=False, indent=2),
                 encoding="utf-8",

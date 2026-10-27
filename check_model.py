@@ -47,11 +47,11 @@ def main():
 
     except errors.APIError as error:
         if error.code == 503:
-            print("Модель перегружена. Повтори запрос немного позже.")
+            print("The model is overloaded. Please try again later.")
         elif error.code == 429:
-            print("Достигнут лимит запросов. Проверь квоту в AI Studio.")
+            print("Request quota exceeded. Check your limits in AI Studio.")
         else:
-            print(f"Ошибка API {error.code}: {error.message}")
+            print(f"API error {error.code}: {error.message}")
 
 
 if __name__ == "__main__":

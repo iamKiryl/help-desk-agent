@@ -53,7 +53,7 @@ class AgentTests(unittest.TestCase):
                 self.assertEqual(history[0].role, "user")
                 return first_response
 
-            # Проверяем, что агент передал результат функции модели.
+            # Verify that the tool result is returned to the model.
             message = history[-1]
             self.assertEqual(message.role, "user")
 
