@@ -91,5 +91,31 @@ class PolicySearchTests(unittest.TestCase):
     def test_empty_query(self):
         self.assertEqual(search_policies("")["results"], [])
 
+    def test_opening_hours_queries_from_evaluation(self):
+        queries = [
+            "opening hours June",
+            "opening hours shop hours schedule",
+        ]
+
+        for query in queries:
+            with self.subTest(query=query):
+                results = search_policies(query)["results"]
+
+                self.assertTrue(results)
+                self.assertEqual(
+                    results[0]["section"],
+                    "When are you open?",
+                )
+                self.assertIn("08:00–20:00", results[0]["text"])
+
+    def test_age_limit_query_from_evaluation(self):
+        results = search_policies(
+            "age limit e-bike rent"
+        )["results"]
+
+        self.assertTrue(results)
+        self.assertEqual(results[0]["section"], "Are there age limits?")
+        self.assertIn("from 16 years old", results[0]["text"])
+
 if __name__ == "__main__":
     unittest.main()

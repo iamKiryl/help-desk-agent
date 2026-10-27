@@ -67,7 +67,7 @@ BOOKING_TOOL = types.Tool(
     ]
 )
 
-def run_agent(client, model: str, question: str) -> str:
+def run_agent(client, model: str, question: str, trace=None) -> str:
     history = [
         types.Content(
             role="user",
@@ -164,6 +164,15 @@ def run_agent(client, model: str, question: str) -> str:
 
             else:
                 result = {"error": "Unknown tool"}
+
+            if trace is not None:
+                trace.append(
+                    {
+                        "tool": call.name,
+                        "arguments": dict(arguments),
+                        "result": result,
+                    }
+                )
 
             tool_results.append(
                 types.Part(

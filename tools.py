@@ -66,16 +66,39 @@ def calculate_refund(booking_id: str) -> dict:
         "deposit_refund_method": booking["paid_with"],
     }
 
-def search_policies(query: str) -> dict:
+def normalize_word(word: str) -> str:
+    if len(word) > 5 and word.endswith("ing"):
+        return word[:-3]
+
+    if len(word) > 4 and word.endswith("ed"):
+        return word[:-2]
+
+    if (
+        len(word) > 3
+        and word.endswith("s")
+        and not word.endswith(("ss", "us"))
+    ):
+        return word[:-1]
+
+    return word
+
+
+def search_words(text: str) -> set[str]:
     stop_words = {
         "a", "an", "the", "is", "are", "do", "does",
         "i", "my", "you", "your", "what", "how",
         "can", "to", "of", "for", "and", "in",
     }
 
-    query_words = set(re.findall(r"[a-z0-9]+", query.lower()))
-    query_words -= stop_words
+    return {
+        normalize_word(word)
+        for word in re.findall(r"[a-z0-9]+", text.lower())
+        if word not in stop_words
+    }
 
+
+def search_policies(query: str) -> dict:
+    query_words = search_words(query)
     matches = []
 
     for path in sorted(POLICIES_PATH.glob("*.md")):
@@ -83,16 +106,17 @@ def search_policies(query: str) -> dict:
 
         for section in re.split(r"(?m)^## ", document)[1:]:
             title, _, content = section.partition("\n")
-            text = f"{title}\n{content}".strip()
 
-            section_words = set(re.findall(r"[a-z0-9]+", text.lower()))
-            score = len(query_words & section_words)
+            title_matches = query_words & search_words(title)
+            content_matches = query_words & search_words(content)
+
+            score = 3 * len(title_matches) + len(content_matches)
 
             if score > 0:
                 matches.append({
                     "source": path.name,
                     "section": title.strip(),
-                    "text": text,
+                    "text": f"{title}\n{content}".strip(),
                     "score": score,
                 })
 
