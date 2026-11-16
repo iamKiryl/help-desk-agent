@@ -67,13 +67,17 @@ BOOKING_TOOL = types.Tool(
     ]
 )
 
-def run_agent(client, model: str, question: str, trace=None) -> str:
-    history = [
+def run_agent(client, model: str, question: str, trace=None, history=None) -> str:
+    if history is None:
+        history = []
+
+    history.append(
         types.Content(
             role="user",
             parts=[types.Part.from_text(text=question)],
         )
-    ]
+    )
+
 
     config = types.GenerateContentConfig(
         system_instruction=(
@@ -199,10 +203,6 @@ def main():
     if not api_key or not model:
         raise SystemExit("Set AI_API_KEY and AI_MODEL in .env")
 
-    question = input("Your question: ").strip()
-    if not question:
-        raise SystemExit("Please enter a question.")
-
     try:
         with genai.Client(
             api_key=api_key,
@@ -211,10 +211,27 @@ def main():
                 retry_options=types.HttpRetryOptions(attempts=1),
             ),
         ) as client:
-            print(run_agent(client, model, question))
+            history = []
+            while True:
+                try:
+                    question = input("Your question: ").strip()
+                    if question.lower() in {"exit", "quit"}:
+                        print("Exiting the agent.")
+                        break
 
-    except httpx.TimeoutException:
-        print("The request timed out. Please try again.")
+                    if not question:
+                        continue
+                    previous_history_length = len(history)
+                    answer = run_agent(client, model, question, history=history)
+                    print(answer, flush=True)
+
+                except httpx.TimeoutException:
+                    print("The request timed out. Please try again.")
+                    del history[previous_history_length:]
+
+    except KeyboardInterrupt:
+        print("\nExiting the agent.")
+
     except httpx.RequestError:
         print("Connection failed. Please check your network.")
     except errors.APIError as error:
